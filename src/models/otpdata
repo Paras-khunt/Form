@@ -1,0 +1,15 @@
+const mongoose = require('mongoose')
+const { response } = require('express')
+
+const otpSchema = new mongoose.Schema({
+    email: 'String',
+    code: 'String',
+    expireIn: Number
+},
+    {
+        timestamps: true
+    }
+)
+const OTP = mongoose.model("OTP", otpSchema);
+
+module.exports = OTP
