@@ -54,7 +54,10 @@ app.get('/changePassword', (req, resp) => {
 
 app.get('/secret', auth, (req, resp) => {
     resp.render('secret')
-    //resp.render("secret")
+})
+
+app.get('/update', auth, (req, resp) => {
+    resp.render('update')
 })
 
 app.get('/logout', auth, async (req, resp) => {
@@ -298,6 +301,84 @@ app.post('/changePassword', async (req, resp) => {
     }
 
 })
+//************************************************************************************************************* */
+app.post('/update', auth, async (req, resp) => {
+
+    const User = req.user
+
+
+    User.Firstname = req.body.firstName,
+        User.Secondname = req.body.secondName,
+        User.EmailId = req.body.email,
+        User.Gender = req.body.Gender,
+        User.MobileNumber = req.body.phoneNo,
+        User.Password = req.body.password
+
+    const otpCode = Math.floor((Math.random() * 10000) + 1)
+    let otpData = new RegisterOTP({
+        email: req.body.email,
+        code: otpCode,
+        expireIn: new Date().getTime() + 200000
+    })
+
+    otpResponse = await otpData.save()
+    //****************************************************************************************************** */
+
+    var nodemailer = require('nodemailer');
+
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'paraskhunt2@gmail.com',
+            pass: 'ywmlpfxdfifqyuzc'
+        }
+    });
+
+    var mailOptions = {
+        from: 'paraskhunt2@gmail.com',
+        to: req.body.email,
+        subject: 'Sending Email for OTP',
+        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otpCode + "</h1>"
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+
+    //**************************************************************************************************** */
+    resp.status(200).render('email-verification2')
+
+
+
+
+
+
+    app.post('/email-verification2', async (req, resp) => {
+        const data = await RegisterOTP.findOne({ code: req.body.code })
+
+        if (data) {
+            const currentTime = new Date().getTime()
+            const diff = data.expireIn - currentTime
+            if (diff < 0) {
+                resp.status(400).send("OTP Is Expired")
+            }
+            else {
+                await User.save();
+                resp.status(200).render('login')
+            }
+        } else {
+            resp.status(400).send("Invalid OTP")
+        }
+
+    })
+})
+
+
+
 
 
 //***************************************************************************************************** */
