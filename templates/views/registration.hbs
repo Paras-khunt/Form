@@ -1,6 +1,17 @@
 <html>
 
 <head>
+    <script language="javascript" type="text/javascript">
+        function DisableBackButton() {
+            window.history.forward()
+        }
+        DisableBackButton();
+        window.onload = DisableBackButton;
+        window.onpageshow = function (evt) { if (evt.persisted) DisableBackButton() }
+        window.onunload = function () { void (0) }
+
+    </script>
+
     <link rel="stylesheet" href="../css/style.css">
     <meta charset="utf-8">
     <title>Form</title>
@@ -8,7 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
-<body>
+<body style="font-size:10px;text-align: center;">
     <!-- Body of Form starts -->
     <div class="container">
         <form action="/registration" method="post" autocomplete="on">
@@ -98,6 +109,10 @@
                 <input type="Submit" name="Submit" class="submit" value="SUBMIT">
             </div>
             <!---Submit Button----->
+
+            <div class="box" style="background: #f0f5f5; font: size 20px;">
+                <a href="login">Login</a>
+            </div>
         </form>
     </div>
     <!--Body of Form ends--->

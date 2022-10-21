@@ -37,12 +37,27 @@ app.get('/', (req, resp) => {
     resp.render("index")
 })
 
+app.get('/index', (req, resp) => {
+    resp.render("index")
+})
+
+app.get('/invalid', (req, resp) => {
+    resp.render("invalid")
+})
+
 app.get('/registration', (req, resp) => {
     resp.render("registration")
 })
 
 app.get('/login', (req, resp) => {
     resp.render("login")
+})
+
+app.get('/email-verification', (req, resp) => {
+    resp.render("email-verification")
+})
+app.get('/email-verification2', (req, resp) => {
+    resp.render("email-verification2")
 })
 
 app.get('/forgot', (req, resp) => {
@@ -86,20 +101,27 @@ app.get('/logout', auth, async (req, resp) => {
     }
 })
 
-app.get('/delete', auth, async (req, resp) => {
+app.get('/delete', auth, (req, resp) => {
+    resp.render('delete')
+})
+
+app.post('/delete', auth, async (req, resp) => {
 
 
 
-    const User = await req.user
-    if (User) {
-        const deleteuser = await RegisterUser.findOneAndDelete(User)
+    const User = req.user.EmailId
+    currentuser = req.body.email
+    if (User === currentuser) {
+
+        const deleteuser = await RegisterUser.findOneAndDelete(req.user)
         resp.clearCookie('jwt')
         resp.render('index')
 
     }
     else {
-        resp.status(400).send('Action rejected')
+        resp.status(400).send("This account is not Yours")
     }
+
 })
 
 //************************************************************************************************************* */
@@ -182,7 +204,7 @@ app.post('/registration', async (req, resp) => {
             const currentTime = new Date().getTime()
             const diff = data.expireIn - currentTime
             if (diff < 0) {
-                resp.status(400).send("OTP Is Expired")
+                resp.status(400).render('email-verification')
             }
             else {
                 const token = await RegisterUsers.generateAuthToken()
@@ -190,7 +212,7 @@ app.post('/registration', async (req, resp) => {
                 resp.status(200).render('login')
             }
         } else {
-            resp.status(400).send("Invalid OTP")
+            resp.status(400).send("email-verification")
         }
 
     })
@@ -231,7 +253,7 @@ app.post("/login", async (req, resp) => {
             resp.cookie("jwt", token)
         }
         else {
-            resp.send('User not Found')
+            resp.status(400).render('invalid')
         }
     }
     catch (error) {
@@ -295,7 +317,7 @@ app.post('/changePassword', async (req, resp) => {
         const currentTime = new Date().getTime()
         const diff = data.expireIn - currentTime
         if (diff < 0) {
-            resp.status(400).send("OTP Is Expired")
+            resp.status(400).render('email-verification')
         }
         else {
             const user = await RegisterUser.findOne({ EmailId: req.body.email })
@@ -304,7 +326,7 @@ app.post('/changePassword', async (req, resp) => {
             resp.status(200).render('login')
         }
     } else {
-        resp.status(400).send("Invalid OTP")
+        resp.status(400).render("email-verification")
     }
 
 })
@@ -378,7 +400,7 @@ app.post('/update', auth, async (req, resp) => {
                 resp.status(200).render('login')
             }
         } else {
-            resp.status(400).send("Invalid OTP")
+            resp.status(400).render('email-verification2')
         }
 
     })

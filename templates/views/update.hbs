@@ -1,14 +1,25 @@
 <html>
 
 <head>
+    <script language="javascript" type="text/javascript">
+        function DisableBackButton() {
+            window.history.forward()
+        }
+        DisableBackButton();
+        window.onload = DisableBackButton;
+        window.onpageshow = function (evt) { if (evt.persisted) DisableBackButton() }
+        window.onunload = function () { void (0) }
+
+    </script>
+
     <link rel="stylesheet" href="../css/style.css">
     <meta charset="utf-8">
-    <title>Form</title>
+    <title>Update Your Profile</title>
     <link href="css/style.css" type="text/css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
-<body>
+<body style="font-size:30px;text-align: center;">
     <!-- Body of Form starts -->
     <div class="container">
         <form action="/update" method="post">
