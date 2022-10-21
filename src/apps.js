@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose')
 const app = express();
 const path = require('path')
 const hbs = require('hbs')
@@ -84,110 +85,116 @@ app.get('/logout', auth, async (req, resp) => {
         resp.status(400).send('logout failed')
     }
 })
-    // const items = req.user.Tokens
 
-    // 
-
-    // const filteredItems = items.filter(item => item.token !== req.token);
-
-    // if (filteredItems.length === items.length) {
-    //     throw new Error(`Id not found: ${removeId} `);
-    // }
-
-    /
-    //************************************************************************************************************* */
-
-    app.post('/registration', async (req, resp) => {
-
-        const RegisterUsers = new RegisterUser({
-            Firstname: req.body.firstName,
-            Secondname: req.body.secondName,
-            EmailId: req.body.email,
-            Gender: req.body.Gender,
-            MobileNumber: req.body.phoneNo,
-            Password: req.body.password
-        })
+app.get('/delete', auth, async (req, resp) => {
 
 
 
+    const User = await req.user
+    if (User) {
+        const deleteuser = await RegisterUser.findOneAndDelete(User)
+        resp.clearCookie('jwt')
+        resp.render('index')
 
+    }
+    else {
+        resp.status(400).send('Action rejected')
+    }
+})
 
+//************************************************************************************************************* */
 
+app.post('/registration', async (req, resp) => {
 
-
-
-
-
-
-
-        //************************************************************************************* */
-
-
-
-
-        const otpCode = Math.floor((Math.random() * 10000) + 1)
-        let otpData = new RegisterOTP({
-            email: req.body.email,
-            code: otpCode,
-            expireIn: new Date().getTime() + 200000
-        })
-
-        otpResponse = await otpData.save()
-        //****************************************************************************************************** */
-
-        var nodemailer = require('nodemailer');
-
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: 'paraskhunt2@gmail.com',
-                pass: 'ywmlpfxdfifqyuzc'
-            }
-        });
-
-        var mailOptions = {
-            from: 'paraskhunt2@gmail.com',
-            to: req.body.email,
-            subject: 'Sending Email for OTP',
-            html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otpCode + "</h1>"
-        };
-
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
-        });
-
-        //**************************************************************************************************** */
-        resp.status(200).render('email-verification')
-
-
-
-
-
-
-        app.post('/email-verification', async (req, resp) => {
-            const data = await RegisterOTP.findOne({ code: req.body.code })
-
-            if (data) {
-                const currentTime = new Date().getTime()
-                const diff = data.expireIn - currentTime
-                if (diff < 0) {
-                    resp.status(400).send("OTP Is Expired")
-                }
-                else {
-                    const token = await RegisterUsers.generateAuthToken()
-                    await RegisterUsers.save();
-                    resp.status(200).render('login')
-                }
-            } else {
-                resp.status(400).send("Invalid OTP")
-            }
-
-        })
+    const RegisterUsers = new RegisterUser({
+        Firstname: req.body.firstName,
+        Secondname: req.body.secondName,
+        EmailId: req.body.email,
+        Gender: req.body.Gender,
+        MobileNumber: req.body.phoneNo,
+        Password: req.body.password
     })
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //************************************************************************************* */
+
+
+
+
+    const otpCode = Math.floor((Math.random() * 10000) + 1)
+    let otpData = new RegisterOTP({
+        email: req.body.email,
+        code: otpCode,
+        expireIn: new Date().getTime() + 200000
+    })
+
+    otpResponse = await otpData.save()
+    //****************************************************************************************************** */
+
+    var nodemailer = require('nodemailer');
+
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'paraskhunt2@gmail.com',
+            pass: 'ywmlpfxdfifqyuzc'
+        }
+    });
+
+    var mailOptions = {
+        from: 'paraskhunt2@gmail.com',
+        to: req.body.email,
+        subject: 'Sending Email for OTP',
+        html: "<h3>OTP for account verification is </h3>" + "<h1 style='font-weight:bold;'>" + otpCode + "</h1>"
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+
+    //**************************************************************************************************** */
+    resp.status(200).render('email-verification')
+
+
+
+
+
+
+    app.post('/email-verification', async (req, resp) => {
+        const data = await RegisterOTP.findOne({ code: req.body.code })
+
+        if (data) {
+            const currentTime = new Date().getTime()
+            const diff = data.expireIn - currentTime
+            if (diff < 0) {
+                resp.status(400).send("OTP Is Expired")
+            }
+            else {
+                const token = await RegisterUsers.generateAuthToken()
+                await RegisterUsers.save();
+                resp.status(200).render('login')
+            }
+        } else {
+            resp.status(400).send("Invalid OTP")
+        }
+
+    })
+})
 
 //***************************************************************************************************** */     
 
@@ -383,6 +390,7 @@ app.post('/update', auth, async (req, resp) => {
 
 //***************************************************************************************************** */
 
+//********************************************************************************************************* */
 app.listen(port, () => {
     console.log(`server is running on ${port}`)
 })
