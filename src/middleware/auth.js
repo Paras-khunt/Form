@@ -14,7 +14,7 @@ const auth = async (req, resp, next) => {
 
     }
     catch (e) {
-        resp.status(400).send('something went wrong')
+        resp.status(400).render('invalid')
     }
 }
 

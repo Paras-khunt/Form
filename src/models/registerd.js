@@ -2,6 +2,7 @@ const { response } = require('express')
 const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const validator = require('validator')
+const bcrypt = require('bcrypt')
 
 const employeeSchema = new mongoose.Schema({
     Firstname: {
@@ -11,6 +12,12 @@ const employeeSchema = new mongoose.Schema({
 
     Secondname: {
         type: String,
+        require: true
+    },
+
+
+    isblock: {
+        type: Boolean,
         require: true
     },
 
@@ -71,6 +78,17 @@ employeeSchema.methods.generateAuthToken = async function () {
     }
 
 }
+
+employeeSchema.pre('save', async function (next) {
+    if (this.isModified('Password')) {
+
+        this.Password = await bcrypt.hash(this.Password, 12)
+
+    }
+    next()
+}
+)
+
 
 const RegisterUser = mongoose.model("RegisterUser", employeeSchema)
 
